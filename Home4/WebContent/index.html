@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Welcome</title>
+<script src="js/jquery-2.1.4.min.js"></script>
+<link rel="stylesheet" type="text/css" href="mystyle.css">
+</head>
+
+<body>
+	<h1>Зоо Магазин</h1>	
+	<script type="application/javascript">
+		
+	var updatename;
+	var updatecost;
+	
+    $.getJSON("api/animals", function (data) {
+    	
+    	var trHTML ="";
+        $.each(data, function (index, value) {
+            trHTML += '<tr><td>' + value.name + '</td><td>' + value.cost + '</td><td>' 
+            + '<button id="btn_edit" value="' + value.id + '"> Edit </button>' + '</td><td>'
+            + '<button id="btn_delete" value="' + value.id + '"> Delete </button>' + '</td><td>'
+            + '<a href="accessories.html?animal_id=' + value.id + '">Аксесуары</a>' + '</td><td>'
+            + '<a href="food.html?animal_id=' + value.id + '">Корм</a>' + '</td></tr>';
+        });
+
+        $('#animals_table'). append(trHTML);
+    });
+    
+    $(document).ready(function () {
+    	$("#divUpdate").hide();
+    	
+    	$("#animals_table").on("click","#btn_delete", function(){
+    		var button = $(this);
+    	    
+    	    var id_delete = $(this).val();
+ 	    
+            $.ajax({
+                type: "DELETE",
+                url: "api/animals/delete/" + id_delete,
+                success: function(value){
+
+                	 $(button).parent().parent().closest('tr').remove();
+                }
+            }); 
+    	});
+    	
+    	$("#animals_table").on("click","#btn_edit", function(){
+    		$("#divUpdate").show();
+
+    	    var id_update = $(this).val();
+    	    
+    	    var row = $(this).parent().parent();             // Moves up from <button> to <td>
+    	    var oname = row.find("td:eq(0)").text();
+    	    var ocost = row.find("td:eq(1)").text();
+           
+    	    updatename = row.find("td:eq(0)");
+    	    updatecost = row.find("td:eq(1)");
+    	    
+    	    $('input[name="uname"]').val(oname);
+    	    $('input[name="ucost"]').val(ocost);
+    	    $('#btn_update').val(id_update);
+
+    	});
+    	
+        $("#btn_create").click(function () {
+            var name = $('input[name="name"]').val();
+            var cost = $('input[name="cost"]').val();
+            
+            var animal = {
+                name : name,
+                cost : cost
+            };
+            var data = JSON.stringify(animal);
+            $.ajax({
+                type: "POST",
+                url: "api/animals",
+                data: data,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(value){
+            
+                    var trHTML = '<tr><td>' + value.name + '</td><td>' + value.cost + '</td><td>'
+                    + '<button id="btn_edit" value="' + value.id + '"> Edit </button>' + '</td><td>'
+                    + '<button id="btn_delete" value="' + value.id + '"> Delete </button>' + '</td><td>'
+                    + '<a href="accessories.html?animal_id=' + value.id + '">Аксесуары</a>' + '</td><td>'
+                    + '<a href="food.html?animal_id=' + value.id + '">Корм</a>' + '</td></tr>';
+                    $('#animals_table').append(trHTML);
+                }
+            });
+        });
+        
+        $("#btn_update").click(function () {
+            var uname = $('input[name="uname"]').val();
+            var ucost = $('input[name="ucost"]').val();
+            var uid = $('#btn_update').val();
+            var animal = {
+            	id : uid,
+                name : uname,
+                cost : ucost
+            };
+            var data = JSON.stringify(animal);
+
+            $.ajax({
+                type: "PUT",
+                url: "api/animals",
+                data: data,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(value){
+
+                	updatename.text(uname);
+                	updatecost.text(ucost);
+                	$("#divUpdate").hide();
+
+                	
+                }
+            });
+        });
+        
+    });
+    
+	</script>
+	<table id="animals_table" border='1'>
+		<tr>
+			<th>Животное</th>
+			<th>Цена</th>
+		</tr>
+	</table>
+	<br>
+	<div id="divUpdate">
+		<fieldset style="width: 420px">
+			<legend>Редактировать значение</legend>
+			<input type="text" name="uname" /> <input type="text" name="ucost" />
+			<button id="btn_update">Update</button>
+			<br>
+
+		</fieldset>
+		<br>
+	</div>
+
+	<div id="create_form">
+		<fieldset style="width: 420px">
+		<legend>Добавить животное</legend>
+			<input type="text" name="name" /> <input type="text" name="cost" />
+			<button id="btn_create">Create</button>
+		</fieldset>
+	</div>
+
+</body>
+</html>

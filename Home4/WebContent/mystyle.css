@@ -1,0 +1,36 @@
+@CHARSET "UTF-8";
+table, td, th {
+	border: 1px solid green;
+	border-top-left-radius: 3px;
+	border-top-right-radius: 3px;
+	border-bottom-right-radius: 3px;
+	border-bottom-left-radius: 3px;
+}
+
+th {
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	border-bottom-right-radius: 6px;
+	border-bottom-left-radius: 6px;
+	background-color: green;
+	color: white;
+}
+
+a:link {
+	color: #FF0000;
+}
+
+/* visited link */
+a:visited {
+	color: #FF0000;
+}
+
+/* mouse over link */
+a:hover {
+	color: #00FF00;
+}
+
+/* selected link */
+a:active {
+	color: #0000FF;
+}

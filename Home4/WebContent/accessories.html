@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Welcome</title>
+<script src="js/jquery-2.1.4.min.js"></script>
+<link rel="stylesheet" type="text/css" href="mystyle.css">
+<script>
+	var getUrlParameter = function getUrlParameter(sParam) {
+		var sPageURL = decodeURIComponent(window.location.search.substring(1)), sURLVariables = sPageURL
+				.split('&'), sParameterName, i;
+
+		for (i = 0; i < sURLVariables.length; i++) {
+			sParameterName = sURLVariables[i].split('=');
+
+			if (sParameterName[0] === sParam) {
+				return sParameterName[1] === undefined ? true
+						: sParameterName[1];
+			}
+		}
+	};
+</script>
+</head>
+<body>
+	<h1>Страница акссесуаров</h1>
+	<script type="application/javascript">
+		
+var updatename;
+var updatecost;
+var animal_id;
+
+animal_id =  getUrlParameter('animal_id');
+
+    $.getJSON("api/accessories/"+animal_id, function (data) {
+    	var trHTML ="";
+        $.each(data, function (index, value) {
+            trHTML += '<tr><td>' + value.name + '</td><td>' + value.cost + '</td><td>' 
+            + '<button id="btn_edit" value="' + value.id + '"> Edit </button>' + '</td><td>'
+            + '<button id="btn_delete" value="' + value.id + '"> Delete </button>' + '</td></tr>';
+        });
+        $('#accessories_table'). append(trHTML);
+    });
+    
+    $(document).ready(function () {
+    	$("#divUpdate").hide();
+    	
+    	$("#accessories_table").on("click","#btn_delete", function(){
+    		var button = $(this);
+    	    var id_delete = $(this).val();
+            $.ajax({
+                type: "DELETE",
+                url: "api/accessories/delete/" + id_delete,
+                success: function(value){
+
+                	 $(button).parent().parent().closest('tr').remove();
+                }
+            }); 
+    	});
+    	
+    	$("#accessories_table").on("click","#btn_edit", function(){
+    		$("#divUpdate").show();
+    	    
+    	    var id_update = $(this).val();
+    	    
+    	    var row = $(this).parent().parent();             
+    	    var oname = row.find("td:eq(0)").text();
+    	    var ocost = row.find("td:eq(1)").text();
+           
+    	    updatename = row.find("td:eq(0)");
+    	    updatecost = row.find("td:eq(1)");
+    	    
+    	    $('input[name="uname"]').val(oname);
+    	    $('input[name="ucost"]').val(ocost);
+    	    $('#btn_update').val(id_update);
+
+    	});
+    	
+        $("#btn_create").click(function () {
+            var name = $('input[name="name"]').val();
+            var cost = $('input[name="cost"]').val();
+            
+            var food = {
+                name : name,
+                cost : cost ,
+                idAnimal : animal_id
+            };
+            
+            var data = JSON.stringify(food);
+
+            $.ajax({
+                type: "POST",
+                url: "api/accessories",
+                data: data,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(value){
+                    var trHTML = '<tr><td>' + value.name + '</td><td>' + value.cost + '</td><td>'
+                    + '<button id="btn_edit" value="' + value.id + '"> Edit </button>' + '</td><td>'
+                    + '<button id="btn_delete" value="' + value.id + '"> Delete </button>' + '</td></tr>';
+                    $('#accessories_table').append(trHTML);
+                }
+            });
+        });
+        
+        $("#btn_update").click(function () {
+            var uname = $('input[name="uname"]').val();
+            var ucost = $('input[name="ucost"]').val();
+            var uid = $('#btn_update').val();
+            var accessory = {
+            	id : uid,
+                name : uname,
+                cost : ucost,
+                idAnimal : animal_id
+            };
+            var data = JSON.stringify(accessory);
+
+            $.ajax({
+                type: "PUT",
+                url: "api/accessories",
+                data: data,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(value){
+
+                	updatename.text(uname);
+                	updatecost.text(ucost);
+                	$("#divUpdate").hide();
+                }
+            });
+        });
+    });
+
+	</script>
+	<a href="index.html"> Вернуться на главную страницу </a>
+	<br>
+	<br>
+	<table id="accessories_table" border='1'>
+		<tr>
+			<th>Название аксессуара</th>
+			<th>Цена</th>
+		</tr>
+	</table>
+	<br>
+	<div id="divUpdate">
+		<fieldset style="width: 420px">
+			<legend>Редактировать значение</legend>
+			<input type="text" name="uname" /> <input type="text" name="ucost" />
+			<button id="btn_update">Update</button>
+			<br>
+
+		</fieldset>
+		<br>
+	</div>
+
+	<div id="create_form">
+		<fieldset style="width: 420px">
+			<legend>Добавить аксессуар</legend>
+			<input type="text" name="name" /> <input type="text" name="cost" />
+			<button id="btn_create">Create</button>
+		</fieldset>
+	</div>
+
+</body>
+</html>
